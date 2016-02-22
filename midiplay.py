@@ -51,12 +51,20 @@ class MidiOut:
 # Main script
 
 import music
-from microbit import button_a, display, sleep
+from microbit import button_a, button_b, display, sleep
 
 TUNES = ['DADADADUM', 'ENTERTAINER', 'PRELUDE', 'ODE', 'NYAN', 'RINGTONE',
     'FUNK', 'BLUES', 'BIRTHDAY', 'WEDDING', 'FUNERAL', 'PUNCHLINE', 'PYTHON',
-    'BADDY', 'CHASE', 'BA_DING', 'WAWAWAWAA', 'JUMP_UP', 'JUMP_DOWN',
-    'POWER_UP', 'POWER_DOWN']
+    'BADDY', 'CHASE', 'WAWAWAWAA', 'JUMP_UP', 'JUMP_DOWN', 'POWER_UP',
+    'POWER_DOWN']
+
+PROGRAMS = [
+    0,   # Grand Piano
+    49,  # String Esemble
+    25,  # Acoustic Guitar
+    35,  # Picked Electric Bass
+    10,  # Glockenspiel
+]
 
 NOTES = {
     'c': 0,
@@ -70,6 +78,7 @@ NOTES = {
 
 
 def play(midi, notes):
+    led = 0
     duration = octave = 4
     bpm, ticks = music.get_tempo()
     mpt = 60000 / bpm / ticks
@@ -99,11 +108,19 @@ def play(midi, notes):
 
                 midinote = max(0, min(127, midinote + 12 * octave))
                 midi.note_on(midinote, 96)
+                display.set_pixel(led, 0, 5)
 
             sleep(duration * mpt)
 
             if midinote is not None:
                 midi.note_off(midinote)
+                display.set_pixel(led, 0, 0)
+                led = (led+1) % 5
+
+        # make sure led and last note is turned off
+        if midinote is not None:
+            display.set_pixel(led, 0, 0)
+            midi.note_off(midinote)
     except:
         # Send all sound off to prevent hanging notes
         midi.control_change(0x78, 0)
@@ -124,13 +141,29 @@ while True:
 # Initialize UART for MIDI
 midi = MidiOut()
 
-# At each button A press, play the next of the builtin tunes
-tune = 0
+tune = program = 0
+# send a PROGRAM CHANGE to set instrument to #0 (Grand Piano)
+midi.program_change(program)
+# set led on first 4 rows of display to indicate current tune (1-20)
+display.set_pixel(program, 4, 5)
+# set led on lowest row of display to indicate selected program (1-5)
+display.set_pixel(program, 4, 5)
+
 while True:
-    if button_a.is_pressed():
-        display.set_pixel(0, 0, 5)
+    if button_a.is_pressed() and button_b.is_pressed():
+        # when both buttons are pressed, change to next program (instrument)
+        display.set_pixel(program, 4, 0)
+        program = (program+1) % len(PROGRAMS)
+        display.set_pixel(program, 4, 5)
+        midi.program_change(PROGRAMS[program])
+    elif button_a.is_pressed():
+        # When button A is pressed, play the current tune
         play(midi, getattr(music, TUNES[tune]))
-        display.set_pixel(0, 0, 0)
+        display.set_pixel(tune % 5, int(tune / 5), 5)
+    elif button_b.is_pressed():
+        # When button B is pressed, select the next of the builtin tunes
+        display.set_pixel(tune % 5, int(tune / 5), 0)
         tune = (tune+1) % len(TUNES)
+        display.set_pixel(tune % 5, int(tune / 5), 5)
 
     sleep(200)
