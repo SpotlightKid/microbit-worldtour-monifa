@@ -44,14 +44,17 @@ class MidiOut:
 from microbit import button_a, display, sleep
 
 
-display.set_pixel(0, 0, 5)
 while True:
     if button_a.is_pressed():
+        display.set_pixel(0, 0, 0)
         break
 
-    sleep(200)
+    display.set_pixel(0, 0, 5)
+    sleep(100)
+    display.set_pixel(0, 0, 0)
+    sleep(100)
 
-display.set_pixel(0, 0, 0)
+# Initialize UART for MIDI
 midi = MidiOut()
 
 while True:
@@ -60,5 +63,6 @@ while True:
     display.set_pixel(0, 0, 5)
     sleep(500)
     display.set_pixel(0, 0, 0)
+    # send NOTE OFF
     midi.note_off(60)
     sleep(500)
