@@ -111,9 +111,9 @@ def play(midi, notes):
 
 # wait for button A press before initializing the UART
 # to allow uploading of new firmware
-display.set_pixel(0, 0, 5)
 while True:
     if button_a.is_pressed():
+        display.set_pixel(0, 0, 0)
         break
 
     display.set_pixel(0, 0, 5)
