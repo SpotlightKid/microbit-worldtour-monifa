@@ -121,3 +121,21 @@ https://www.mbed.com/en/development/hardware/prototyping-production/daplink/dapl
 4. Mount MAINTENANCE drive
 5. Copy firmware hex file to MAINTENANCE drive and wait a few seconds
 6. MAINTENANCE drive disappears and MICROBIT drive appears
+
+
+Recursion Depth
+~~~~~~~~~~~~~~~
+
+The maximum recursion depth is *very* limited:
+
+::
+
+    Traceback (most recent call last):
+      File "__main__", line 125, in <module>
+      File "__main__", line 102, in play
+      File "__main__", line 96, in play
+      File "__main__", line 75, in playstep
+      File "__main__", line 20, in note_on
+      File "__main__", line 18, in channel_message
+      File "__main__", line 14, in send
+    RuntimeError: maximum recursion depth exceeded
