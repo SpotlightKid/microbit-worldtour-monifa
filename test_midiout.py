@@ -26,9 +26,9 @@ class MidiOut:
         msg = [command] + [value & 0x7f for value in data]
         self.send(msg)
     def note_off(self, note, velocity=0, ch=None):
-        self.channel_message(NOTE_OFF, note, velocity)
+        self.channel_message(NOTE_OFF, note, velocity, ch=ch)
     def note_on(self, note, velocity=127, ch=None):
-        self.channel_message(NOTE_ON, note, velocity)
+        self.channel_message(NOTE_ON, note, velocity, ch=ch)
     def control_change(self, control, value, lsb=False, ch=None):
         self.channel_message(CONTROLLER_CHANGE, control,
                              value >> 7 if lsb else value, ch=ch)
