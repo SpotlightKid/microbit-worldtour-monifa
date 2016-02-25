@@ -2,8 +2,6 @@
 
 MIDI output circuit:
 
-Circuit:
-
 https://www.midi.org/articles/midi-electrical-specifications
 
 1. 3.3V connected to MIDI output socket pin 4 via a 35 ohm resistor
