@@ -1,11 +1,5 @@
 # -----------------------------------------------------------------------------
 # START OF MIDI LIBRARY CODE
-#
-# Copy everything below here until the END OF MIDI LIBRARY CODE line
-# to the *start* of your micro:bit MicroPython script
-# in which you want to use MIDI output.
-
-from microbit import uart
 
 # global constants
 NOTE_OFF = 0x80
@@ -13,19 +7,15 @@ NOTE_ON = 0x90
 CONTROLLER_CHANGE = 0xB0
 PROGRAM_CHANGE = 0xC0
 
+
 class MidiOut:
     def __init__(self, device=None, channel=1):
-        if device is None:
-            self.device = uart
-            self.device.init(baudrate=31250)
-        elif not hasattr(device, 'write'):
+        if not hasattr(device, 'write'):
             raise TypeError("device instance must have a 'write' method.")
-        else:
-            self.device = device
-
         if channel < 1 or channel > 16:
             raise ValueError('channel must be an integer between 1..16.')
         self.channel = channel
+        self.device = device
     def send(self, msg):
         return self.device.write(bytes(msg))
     def channel_message(self, command, *data, ch=None):
@@ -47,11 +37,13 @@ class MidiOut:
 # END OF MIDI LIBRARY CODE
 # -----------------------------------------------------------------------------
 
+
 # -----------------------------------------------------------------------------
 # Main script
 
 import music
-from microbit import button_a, button_b, display, sleep
+from microbit import button_a, button_b, display, sleep, uart
+
 
 TUNES = ['DADADADUM', 'ENTERTAINER', 'PRELUDE', 'ODE', 'NYAN', 'RINGTONE',
     'FUNK', 'BLUES', 'BIRTHDAY', 'WEDDING', 'FUNERAL', 'PUNCHLINE', 'PYTHON',
@@ -139,7 +131,8 @@ while True:
     sleep(100)
 
 # Initialize UART for MIDI
-midi = MidiOut()
+uart.init(baudrate=31250)
+midi = MidiOut(uart)
 
 tune = program = 0
 # send a PROGRAM CHANGE to set instrument to #0 (Grand Piano)
