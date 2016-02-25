@@ -1,13 +1,15 @@
-from microbit import button_a, display
-from microbit import uart
-from microbit import running_time, sleep
+# -----------------------------------------------------------------------------
+# START OF MIDI LIBRARY CODE
 
 NOTE_ON = 0x90
 CONTROLLER_CHANGE = 0xB0
 PROGRAM_CHANGE = 0xC0
 
+
 class MidiOut:
-    def __init__(self, device, channel=1):
+    def __init__(self, device=None, channel=1):
+        if not hasattr(device, 'write'):
+            raise TypeError("device instance must have a 'write' method.")
         if channel < 1 or channel > 16:
             raise ValueError('channel must be an integer between 1..16.')
         self.channel = channel
@@ -16,6 +18,8 @@ class MidiOut:
         command = (command & 0xf0) | ((ch if ch else self.channel) - 1 & 0xf)
         msg = [command] + [value & 0x7f for value in data]
         self.device.write(bytes(msg))
+    def note_off(self, note, velocity=0, ch=None):
+        self.channel_message(NOTE_OFF, note, velocity, ch=ch)
     def note_on(self, note, velocity=127, ch=None):
         self.channel_message(NOTE_ON, note, velocity, ch=ch)
     def control_change(self, control, value, lsb=False, ch=None):
@@ -25,6 +29,15 @@ class MidiOut:
             self.channel_message(CONTROLLER_CHANGE, control + 32, value, ch=ch)
     def program_change(self, program, ch=None):
         self.channel_message(PROGRAM_CHANGE, program, ch=ch)
+
+# END OF MIDI LIBRARY CODE
+# -----------------------------------------------------------------------------
+
+
+# Start OF SEQUENCER CODE
+# -----------------------------------------------------------------------------
+
+from microbit import running_time, sleep
 
 class Pattern:
     velocities = {
@@ -95,11 +108,23 @@ class Sequencer:
             if timetowait > 0:
                 sleep(timetowait)
 
-FUNKYDRUMMER = """\
-36 x.x.......x..x..
-38 ....x..m.m.mx..m
-42 xxxxx.x.xxxxx.xx
-46 .....x.x.....x..
+# END OF SEQUENCER CODE
+# -----------------------------------------------------------------------------
+
+
+# -----------------------------------------------------------------------------
+# Main script
+
+from microbit import button_a, display
+from microbit import uart
+
+PATTERN = """
+# Rosanna Shuffle
+# about 124 bpm (for a real tempo of 93 bpm)
+#  1..|..|..|..2..|..|..|..
+36 x....m...x.....m..s..... Bassdrum
+40 .+-.+-m+-.+-.+-.+-m+-.++ Snare 2
+42 x-sx-sx-sx-sx-sx-sx-sx-s Closed Hi-hat
 """
 
 while True:
@@ -115,5 +140,5 @@ while True:
 # Initialize UART for MIDI
 uart.init(baudrate=31250)
 midi = MidiOut(uart)
-seq = Sequencer(midi, bpm=90)
-seq.play(Pattern(FUNKYDRUMMER), kit=9)
+seq = Sequencer(midi, bpm=124)
+seq.play(Pattern(PATTERN), kit=9)
