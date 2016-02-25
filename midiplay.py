@@ -1,3 +1,17 @@
+"""Play the builtin tunes via MIDI.
+
+MIDI output circuit:
+
+Circuit:
+
+https://www.midi.org/articles/midi-electrical-specifications
+
+1. 3.3V connected to MIDI output socket pin 4 via a 35 ohm resistor
+2. GND connected to MIDI output socket pin 2
+3. Pin 0 (TX) connected to MIDI output socket pin 5 via a 10 ohm resistor
+
+"""
+
 # -----------------------------------------------------------------------------
 # START OF MIDI LIBRARY CODE
 
@@ -16,12 +30,10 @@ class MidiOut:
             raise ValueError('channel must be an integer between 1..16.')
         self.channel = channel
         self.device = device
-    def send(self, msg):
-        return self.device.write(bytes(msg))
     def channel_message(self, command, *data, ch=None):
         command = (command & 0xf0) | ((ch if ch else self.channel) - 1 & 0xf)
         msg = [command] + [value & 0x7f for value in data]
-        self.send(msg)
+        self.device.write(bytes(msg))
     def note_off(self, note, velocity=0, ch=None):
         self.channel_message(NOTE_OFF, note, velocity, ch=ch)
     def note_on(self, note, velocity=127, ch=None):
