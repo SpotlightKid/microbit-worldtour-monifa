@@ -115,7 +115,7 @@ Updated the mbed firmware to 0234 via maintenance mode from
 
 https://www.mbed.com/en/development/hardware/prototyping-production/daplink/daplink-on-kl26z/
 
-1. unplug micro:bit
+1. Unplug micro:bit
 2. Press and hold reset button
 3. Plug in micro:bit
 4. Mount MAINTENANCE drive
@@ -139,3 +139,14 @@ The maximum recursion depth is *very* limited:
       File "__main__", line 18, in channel_message
       File "__main__", line 14, in send
     RuntimeError: maximum recursion depth exceeded
+
+Comment from Damien George on the microbit mailing list:
+
+    Yes, the recursion depth is really limited.  Each call uses about 200
+    bytes of stack, plus 4 bytes for each argument or local variable.
+    Since there's only 2k of stack (some of which is taken by the start up
+    code), you only get about 8 nested calls.
+
+    The microbit is really limited on memory, so please don't expect too
+    much from it!
+
